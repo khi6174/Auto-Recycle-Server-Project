@@ -298,3 +298,14 @@ WHERE username = 'floor1';
 UPDATE admin
 SET floor = 2
 WHERE username = 'floor2';
+
+ALTER TABLE admin
+  ADD COLUMN birth_date DATE NULL COMMENT '생년월일',
+  ADD COLUMN position VARCHAR(50) NULL COMMENT '직책',
+  ADD COLUMN phone VARCHAR(20) NULL COMMENT '전화번호',
+  ADD COLUMN photo_url VARCHAR(500) NULL COMMENT '프로필 사진 URL';
+
+UPDATE admin SET birth_date='2001-06-29', position='1층 담당', photo_url='/uploads/manager1.jpg' WHERE username='floor1';
+UPDATE admin SET birth_date='2001-08-22', position='2층 담당', photo_url='/uploads/manager2.jpg' WHERE username='floor2';
+UPDATE admin SET phone='010-1234-5678' WHERE username='floor1';
+UPDATE admin SET phone='010-9876-5432' WHERE username='floor2';

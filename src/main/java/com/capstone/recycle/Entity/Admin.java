@@ -57,4 +57,16 @@ public class Admin {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    @Column(name = "birth_date")
+    private java.time.LocalDate birthDate;
+
+    @Column(name = "position", length = 50)
+    private String position;
+
+    @Column(name = "photo_url", length = 500)
+    private String photoUrl;
+
+    @Column(name = "phone", length = 20)
+    private String phone;
 }
