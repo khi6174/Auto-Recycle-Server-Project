@@ -1,6 +1,7 @@
 package com.capstone.recycle.Service;
 
 import com.capstone.recycle.DTO.request.TrashEventRequest;
+import com.capstone.recycle.DTO.response.BinResponse;
 import com.capstone.recycle.DTO.response.ErrorLogResponse;
 import com.capstone.recycle.DTO.response.TrashEventResponse;
 import com.capstone.recycle.Entity.*;
@@ -61,7 +62,18 @@ public class TrashEventService {
                 binStatusRepository.save(status);
 
                 // ✅ 적재량 변경 실시간 브로드캐스트
-                //webSocketService.broadcastBinStatus(device.getId(), status);
+                try {
+
+                    webSocketService.broadcastBinStatus(
+                            device.getId(),
+                            new BinResponse(bin, status)
+                    );
+
+                } catch (Exception e) {
+
+                    System.out.println("WS ERROR");
+                    e.printStackTrace();
+                }
 
                 // ✅ 적재량 80% 이상이면 경고 로그 + 실시간 알림
                 if (request.getFillPercent() >= 80) {
