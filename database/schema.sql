@@ -309,3 +309,9 @@ UPDATE admin SET birth_date='2001-06-29', position='1층 담당', photo_url='/up
 UPDATE admin SET birth_date='2001-08-22', position='2층 담당', photo_url='/uploads/manager2.jpg' WHERE username='floor2';
 UPDATE admin SET phone='010-1234-5678' WHERE username='floor1';
 UPDATE admin SET phone='010-9876-5432' WHERE username='floor2';
+UPDATE admin
+SET birth_date='2002-03-14',
+    position='총괄 관리자',
+    phone='010-3456-7890',
+    photo_url='/uploads/super.jpg'
+WHERE role='SUPER_ADMIN';
