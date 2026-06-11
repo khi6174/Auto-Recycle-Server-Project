@@ -148,3 +148,170 @@ INSERT INTO trash_type (type_code, type_name, description, recyclable) VALUES
 ('CAN',     '캔',      '음료캔, 금속캔 등',         TRUE),
 ('GLASS',   '유리',    '유리병, 유리용기 등',        TRUE),
 ('GENERAL', '일반쓰레기', '재활용 불가 쓰레기',      FALSE);
+
+
+-- =============================================
+-- 추가 데이터 (admin, device, bin, bin_status)
+-- =============================================
+UPDATE auto_recycle_db.admin
+SET password = '$2b$10$N53PfUm1erhCc5LI/RcGe.CYIGj99yTfCB.Ka3NzhNpsl7/9IDT0m'
+WHERE username = 'admin';
+
+USE auto_recycle_db;
+
+-- device 더미 데이터
+INSERT INTO device (device_code, device_name, location, status) VALUES
+('DEVICE_001', '1호기', '1층 로비', 'ONLINE'),
+('DEVICE_002', '2호기', '2층 복도', 'OFFLINE');
+
+-- bin 더미 데이터
+INSERT INTO bin (device_id, trash_type_id, bin_code, bin_name, capacity) VALUES
+(1, 1, 'BIN_001_PLASTIC', '1호기 플라스틱통', 100),
+(1, 2, 'BIN_001_CAN',     '1호기 캔통',       100),
+(1, 3, 'BIN_001_GLASS',   '1호기 유리통',     100),
+(1, 4, 'BIN_001_GENERAL', '1호기 일반쓰레기통', 100),
+(2, 1, 'BIN_002_PLASTIC', '2호기 플라스틱통', 100);
+
+INSERT INTO bin (device_id, trash_type_id, bin_code, bin_name, capacity) VALUES
+(2, 2, 'BIN_002_CAN', 	  '2호기 캔통', 	  100),
+(2, 3, 'BIN_002_GLASS',   '2호기 유리통',    100),
+(2, 4, 'BIN_002_GENERAL', '2호기 일반쓰레기통', 100);
+
+
+-- bin_status 더미 데이터
+INSERT INTO bin_status (bin_id, fill_percent, is_full, error_flag) VALUES
+(1, 65, false, false),
+(2, 30, false, false),
+(3, 90, false, false),
+(4, 10, false, false),
+(5, 0,  false, false);
+
+INSERT INTO trash_type (type_code, type_name, description, recyclable)
+VALUES ('BEVERAGE', '음료', '잔여 음료 및 액체류', FALSE);
+
+INSERT INTO bin (device_id, trash_type_id, bin_code, bin_name, capacity)
+VALUES
+    (1, 5, 'BIN_001_BEVERAGE', '1호기 음료통', 100),
+    (2, 5, 'BIN_002_BEVERAGE', '2호기 음료통', 100);
+
+CREATE TABLE beverage_fill_log (
+                                   id              BIGINT      NOT NULL AUTO_INCREMENT,
+                                   bin_id          BIGINT      NOT NULL COMMENT '음료통 FK',
+                                   fill_percent    INT         NOT NULL DEFAULT 0 COMMENT '음료 적재량 (%)',
+                                   estimated_ml    INT                  DEFAULT NULL COMMENT '추정 음료량 ml',
+                                   sensor_value    DOUBLE               DEFAULT NULL COMMENT '센서 원본값',
+                                   measured_at     DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '측정 시간',
+                                   PRIMARY KEY (id),
+                                   CONSTRAINT fk_beverage_fill_log_bin
+                                       FOREIGN KEY (bin_id) REFERENCES bin(id)
+) COMMENT='음료 적재량 측정 이력 테이블';
+
+CREATE TABLE inspection_notification (
+                                         id                BIGINT       NOT NULL AUTO_INCREMENT,
+                                         device_id          BIGINT                DEFAULT NULL COMMENT '장치 FK',
+                                         bin_id             BIGINT                DEFAULT NULL COMMENT '통 FK',
+                                         sender_admin_id    BIGINT       NOT NULL COMMENT '알림 보낸 관리자',
+                                         receiver_admin_id  BIGINT       NOT NULL COMMENT '알림 받는 관리자',
+                                         floor              INT                  DEFAULT NULL COMMENT '층 정보',
+                                         title              VARCHAR(100) NOT NULL COMMENT '알림 제목',
+                                         message            TEXT                 DEFAULT NULL COMMENT '알림 내용',
+                                         notification_type  VARCHAR(30)  NOT NULL DEFAULT 'INSPECTION_COMPLETE'
+                                             COMMENT 'INSPECTION_COMPLETE / FULL_ALERT / ERROR_ALERT',
+                                         status             VARCHAR(20)  NOT NULL DEFAULT 'SENT'
+                                             COMMENT 'SENT / READ / CONFIRMED / CANCELED',
+                                         sent_at            DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                         read_at            DATETIME              DEFAULT NULL,
+                                         confirmed_at       DATETIME              DEFAULT NULL,
+                                         created_at         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                         updated_at         DATETIME              DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+                                         PRIMARY KEY (id),
+                                         CONSTRAINT fk_inspection_device
+                                             FOREIGN KEY (device_id) REFERENCES device(id),
+                                         CONSTRAINT fk_inspection_bin
+                                             FOREIGN KEY (bin_id) REFERENCES bin(id),
+                                         CONSTRAINT fk_inspection_sender_admin
+                                             FOREIGN KEY (sender_admin_id) REFERENCES admin(id),
+                                         CONSTRAINT fk_inspection_receiver_admin
+                                             FOREIGN KEY (receiver_admin_id) REFERENCES admin(id)
+) COMMENT='점검 완료 알림 및 관리자 커뮤니케이션 테이블';
+
+ALTER TABLE admin
+    ADD COLUMN floor INT NULL,
+  ADD COLUMN fcm_token VARCHAR(255) NULL;
+
+SET @can_id      = (SELECT id FROM trash_type WHERE type_code = 'CAN');
+SET @glass_id    = (SELECT id FROM trash_type WHERE type_code = 'GLASS');
+SET @general_id  = (SELECT id FROM trash_type WHERE type_code = 'GENERAL');
+SET @beverage_id = (SELECT id FROM trash_type WHERE type_code = 'BEVERAGE');
+
+
+INSERT INTO bin (id, device_id, trash_type_id, bin_code, bin_name, capacity)
+VALUES
+    (9, 1, @beverage_id, 'BIN_001_BEVERAGE', '1호기 음료통', 100),
+    (10, 2, @beverage_id, 'BIN_002_BEVERAGE', '2호기 음료통', 100);
+
+
+INSERT INTO bin_status (bin_id, fill_percent, is_full, error_flag)
+VALUES
+    (6, 0, FALSE, FALSE),
+    (7, 0, FALSE, FALSE),
+    (8, 0, FALSE, FALSE),
+    (9, 0, FALSE, FALSE),
+    (10, 0, FALSE, FALSE);
+
+
+INSERT INTO admin (username, password, name, role)
+VALUES
+    ('floor1', '$2b$10$N53PfUm1erhCc5LI/RcGe.CYIGj99yTfCB.Ka3NzhNpsl7/9IDT0m', '1층 관리자', 'ADMIN'),
+    ('floor2', '$2b$10$N53PfUm1erhCc5LI/RcGe.CYIGj99yTfCB.Ka3NzhNpsl7/9IDT0m', '2층 관리자', 'ADMIN');
+
+ALTER TABLE trash_event
+    ADD COLUMN event_type VARCHAR(20) NOT NULL DEFAULT 'CLASSIFY'
+    COMMENT 'CLASSIFY / RESET' AFTER trash_type_id;
+
+ALTER TABLE trash_event
+    ADD COLUMN performed_by_admin_id BIGINT DEFAULT NULL
+    COMMENT '작업 수행 관리자' AFTER event_type,
+  ADD CONSTRAINT fk_event_admin FOREIGN KEY (performed_by_admin_id) REFERENCES admin(id);
+
+-- 1) 받는 사람 미확인 알림 조회가 가장 빈번하므로 인덱스 필수
+ALTER TABLE inspection_notification
+    ADD INDEX idx_receiver_status (receiver_admin_id, status, sent_at DESC);
+
+-- 2) 층별/타입별 통계용
+ALTER TABLE inspection_notification
+    ADD INDEX idx_floor_type (floor, notification_type);
+
+-- 3) 장치 기준 알림 이력 조회용
+ALTER TABLE inspection_notification
+    ADD INDEX idx_device (device_id, sent_at DESC);
+
+select * from trash_event;
+select * from admin;
+
+update admin set name="총괄 관리자" where id = 1;
+
+UPDATE admin
+SET floor = 1
+WHERE username = 'floor1';
+
+UPDATE admin
+SET floor = 2
+WHERE username = 'floor2';
+
+ALTER TABLE admin
+  ADD COLUMN birth_date DATE NULL COMMENT '생년월일',
+  ADD COLUMN position VARCHAR(50) NULL COMMENT '직책',
+  ADD COLUMN phone VARCHAR(20) NULL COMMENT '전화번호',
+  ADD COLUMN photo_url VARCHAR(500) NULL COMMENT '프로필 사진 URL';
+
+UPDATE admin SET birth_date='2001-06-29', position='1층 담당', photo_url='/uploads/manager1.jpg' WHERE username='floor1';
+UPDATE admin SET birth_date='2001-08-22', position='2층 담당', photo_url='/uploads/manager2.jpg' WHERE username='floor2';
+UPDATE admin SET phone='010-1234-5678' WHERE username='floor1';
+UPDATE admin SET phone='010-9876-5432' WHERE username='floor2';
+UPDATE admin
+SET birth_date='2002-03-14',
+    position='총괄 관리자',
+    phone='010-3456-7890',
+    photo_url='/uploads/super.jpg'
+WHERE role='SUPER_ADMIN';

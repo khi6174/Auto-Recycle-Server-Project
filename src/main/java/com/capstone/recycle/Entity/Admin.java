@@ -1,4 +1,4 @@
-package com.capstone.recycle.entities;
+package com.capstone.recycle.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,6 +29,12 @@ public class Admin {
     @Builder.Default
     private String role = "ADMIN"; // ADMIN / SUPER_ADMIN
 
+    @Column(name = "floor")
+    private Integer floor; // 담당 층 (SUPER_ADMIN 은 null)
+
+    @Column(name = "fcm_token", length = 255)
+    private String fcmToken;
+
     @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;
@@ -51,4 +57,16 @@ public class Admin {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
+
+    @Column(name = "birth_date")
+    private java.time.LocalDate birthDate;
+
+    @Column(name = "position", length = 50)
+    private String position;
+
+    @Column(name = "photo_url", length = 500)
+    private String photoUrl;
+
+    @Column(name = "phone", length = 20)
+    private String phone;
 }
