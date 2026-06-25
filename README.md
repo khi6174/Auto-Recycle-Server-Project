@@ -11,10 +11,6 @@ AI-powered Smart Recycling System using YOLOv4-Tiny, Raspberry Pi, Spring Boot, 
 - 🗄️ MySQL database
 - 🌐 Web dashboard for monitoring and management
 
-
-# 🗑️ Auto Recycle Helper
-> AI 기반 자동 분리수거 시스템
-
 ---
 
 ## 📌 프로젝트 소개
