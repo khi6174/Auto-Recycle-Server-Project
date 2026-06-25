@@ -1,3 +1,17 @@
+# Smart Trash AI
+
+AI-powered Smart Recycling System using YOLOv4-Tiny, Raspberry Pi, Spring Boot, Android, and MySQL.
+
+## Key Features
+- ♻️ Real-time recyclable waste detection with YOLOv4-Tiny
+- 🖥️ Spring Boot backend with REST APIs
+- 📡 WebSocket (STOMP) for real-time communication
+- 🍓 Raspberry Pi edge computing
+- 📱 Android application
+- 🗄️ MySQL database
+- 🌐 Web dashboard for monitoring and management
+
+
 # 🗑️ Auto Recycle Helper
 > AI 기반 자동 분리수거 시스템
 
